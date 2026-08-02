@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — EchoWall</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2430; --paper:#FAF7F2; --paper-dim:#F1ECE2;
+    --gold:#E8A33D; --sage:#7C9885; --rose:#D88C9A; --line:rgba(27,36,48,0.14);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--paper); color:var(--ink); font-family:'Inter',sans-serif; min-height:100vh;}
+  h1,h2{font-family:'Fraunces',serif; font-weight:700;}
+
+  /* LOGIN */
+  #loginScreen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .login-card{
+    max-width:380px; width:100%; background:white; border:1px solid var(--line);
+    border-radius:20px; padding:36px 28px;
+  }
+  .login-card h1{font-size:1.5rem; margin-bottom:24px;}
+  label{display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px; margin-top:16px;}
+  input{
+    width:100%; border:1.5px solid var(--line); border-radius:10px; padding:12px 14px;
+    font-size:0.95rem; background:var(--paper-dim); font-family:'Inter',sans-serif;
+  }
+  input:focus{outline:2px solid var(--sage); outline-offset:1px;}
+  button{
+    cursor:pointer; font-family:'Inter',sans-serif;
+  }
+  .btn-primary{
+    width:100%; margin-top:22px; background:var(--ink); color:var(--paper);
+    border:none; border-radius:100px; padding:13px; font-weight:600; font-size:0.95rem;
+  }
+  .btn-primary:disabled{opacity:0.6;}
+  .login-error{color:#a13b3b; font-size:0.85rem; margin-top:12px; display:none;}
+
+  /* DASHBOARD */
+  #dashboard{display:none; max-width:760px; margin:0 auto; padding:32px 20px;}
+  .dash-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;}
+  .dash-header h1{font-size:1.5rem;}
+  .signout{background:none; border:1.5px solid var(--line); border-radius:100px; padding:8px 16px; font-size:0.85rem; font-weight:600;}
+  .tabs{display:flex; gap:8px; margin-bottom:20px;}
+  .tab{
+    background:none; border:1.5px solid var(--line); border-radius:100px; padding:8px 18px;
+    font-size:0.88rem; font-weight:600; color:#6b7280;
+  }
+  .tab.active{background:var(--ink); color:var(--paper); border-color:var(--ink);}
+  .empty{color:#8a91a0; font-size:0.92rem; padding:40px 0; text-align:center;}
+  .item{
+    background:white; border:1px solid var(--line); border-radius:14px; padding:20px;
+    margin-bottom:14px;
+  }
+  .item-top{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;}
+  .item-name{font-weight:700; font-size:0.98rem;}
+  .item-role{font-size:0.82rem; color:#8a91a0;}
+  .item-stars{color:var(--gold); font-size:0.85rem; white-space:nowrap;}
+  .item-quote{font-size:0.92rem; color:#3a4250; margin:10px 0; line-height:1.5;}
+  .item-actions{display:flex; gap:8px; margin-top:12px;}
+  .item-actions button{
+    border:none; border-radius:100px; padding:8px 16px; font-size:0.85rem; font-weight:600;
+  }
+  .btn-approve{background:var(--sage); color:white;}
+  .btn-reject{background:var(--rose); color:white;}
+  .btn-unapprove{background:var(--paper-dim); color:var(--ink); border:1px solid var(--line) !important;}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-card">
+    <h1>Dashboard login</h1>
+    <label for="email">Email</label>
+    <input type="email" id="email" autocomplete="username">
+    <label for="password">Password</label>
+    <input type="password" id="password" autocomplete="current-password">
+    <button class="btn-primary" id="loginBtn">Log in</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<div id="dashboard">
+  <div class="dash-header">
+    <h1>Testimonials</h1>
+    <button class="signout" id="signOutBtn">Sign out</button>
+  </div>
+  <div class="tabs">
+    <button class="tab active" data-filter="pending">Pending</button>
+    <button class="tab" data-filter="approved">Approved</button>
+  </div>
+  <div id="list"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://lcutykiqvezdpdbsdjon.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxjdXR5a2lxdmV6ZHBkYnNkam9uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MjA0NzgsImV4cCI6MjEwMTE5NjQ3OH0.mHTiaQwZhjLvxvIFfb1pgZ9CDdYK-60LdIrzAoeVgQc";
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const loginScreen = document.getElementById('loginScreen');
+  const dashboard = document.getElementById('dashboard');
+  const loginError = document.getElementById('loginError');
+  let currentFilter = 'pending';
+
+  async function checkSession(){
+    const { data: { session } } = await client.auth.getSession();
+    if (session) {
+      showDashboard();
+    } else {
+      loginScreen.style.display = 'flex';
+      dashboard.style.display = 'none';
+    }
+  }
+
+  document.getElementById('loginBtn').addEventListener('click', async () => {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    loginError.style.display = 'none';
+    const { error } = await client.auth.signInWithPassword({ email, password });
+    if (error) {
+      loginError.textContent = error.message;
+      loginError.style.display = 'block';
+    } else {
+      showDashboard();
+    }
+  });
+
+  document.getElementById('signOutBtn').addEventListener('click', async () => {
+    await client.auth.signOut();
+    loginScreen.style.display = 'flex';
+    dashboard.style.display = 'none';
+  });
+
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentFilter = tab.dataset.filter;
+      loadItems();
+    });
+  });
+
+  function showDashboard(){
+    loginScreen.style.display = 'none';
+    dashboard.style.display = 'block';
+    loadItems();
+  }
+
+  async function loadItems(){
+    const list = document.getElementById('list');
+    list.innerHTML = '<div class="empty">Loading...</div>';
+
+    const wantApproved = currentFilter === 'approved';
+    const { data, error } = await client
+      .from('Testimonials')
+      .select('*')
+      .eq('Approved', wantApproved)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      list.innerHTML = '<div class="empty">Error loading: ' + error.message + '</div>';
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      list.innerHTML = '<div class="empty">Nothing here yet.</div>';
+      return;
+    }
+
+    list.innerHTML = '';
+    data.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'item';
+      const stars = '★'.repeat(item.rating || 0) + '☆'.repeat(5 - (item.rating || 0));
+      div.innerHTML = `
+        <div class="item-top">
+          <div>
+            <div class="item-name">${escapeHtml(item.name || '')}</div>
+            <div class="item-role">${escapeHtml(item.role || '')}</div>
+          </div>
+          <div class="item-stars">${stars}</div>
+        </div>
+        <div class="item-quote">"${escapeHtml(item.quote || '')}"</div>
+        <div class="item-actions"></div>
+      `;
+      const actions = div.querySelector('.item-actions');
+      if (wantApproved) {
+        const unapproveBtn = document.createElement('button');
+        unapproveBtn.className = 'btn-unapprove';
+        unapproveBtn.textContent = 'Unapprove';
+        unapproveBtn.onclick = () => updateStatus(item.id, false);
+        actions.appendChild(unapproveBtn);
+      } else {
+        const approveBtn = document.createElement('button');
+        approveBtn.className = 'btn-approve';
+        approveBtn.textContent = 'Approve';
+        approveBtn.onclick = () => updateStatus(item.id, true);
+        const rejectBtn = document.createElement('button');
+        rejectBtn.className = 'btn-reject';
+        rejectBtn.textContent = 'Delete';
+        rejectBtn.onclick = () => deleteItem(item.id);
+        actions.appendChild(approveBtn);
+        actions.appendChild(rejectBtn);
+      }
+      list.appendChild(div);
+    });
+  }
+
+  async function updateStatus(id, approved){
+    await client.from('Testimonials').update({ Approved: approved }).eq('id', id);
+    loadItems();
+  }
+
+  async function deleteItem(id){
+    if (!confirm('Delete this testimonial permanently?')) return;
+    await client.from('Testimonials').delete().eq('id', id);
+    loadItems();
+  }
+
+  function escapeHtml(str){
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  checkSession();
+</script>
+
+</body>
+</html>
