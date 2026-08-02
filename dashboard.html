@@ -159,8 +159,7 @@
     const { data, error } = await client
       .from('Testimonials')
       .select('*')
-      .eq('Approved', wantApproved)
-      .order('id', { ascending: false });
+      .eq('Approved', wantApproved);
 
     if (error) {
       list.innerHTML = '<div class="empty">Error loading: ' + error.message + '</div>';
@@ -193,17 +192,17 @@
         const unapproveBtn = document.createElement('button');
         unapproveBtn.className = 'btn-unapprove';
         unapproveBtn.textContent = 'Unapprove';
-        unapproveBtn.onclick = () => updateStatus(item.id, false);
+        unapproveBtn.onclick = () => updateStatus(item, false);
         actions.appendChild(unapproveBtn);
       } else {
         const approveBtn = document.createElement('button');
         approveBtn.className = 'btn-approve';
         approveBtn.textContent = 'Approve';
-        approveBtn.onclick = () => updateStatus(item.id, true);
+        approveBtn.onclick = () => updateStatus(item, true);
         const rejectBtn = document.createElement('button');
         rejectBtn.className = 'btn-reject';
         rejectBtn.textContent = 'Delete';
-        rejectBtn.onclick = () => deleteItem(item.id);
+        rejectBtn.onclick = () => deleteItem(item);
         actions.appendChild(approveBtn);
         actions.appendChild(rejectBtn);
       }
@@ -211,14 +210,18 @@
     });
   }
 
-  async function updateStatus(id, approved){
-    await client.from('Testimonials').update({ Approved: approved }).eq('id', id);
+  async function updateStatus(item, approved){
+    await client.from('Testimonials')
+      .update({ Approved: approved })
+      .match({ name: item.name, role: item.role, quote: item.quote, rating: item.rating });
     loadItems();
   }
 
-  async function deleteItem(id){
+  async function deleteItem(item){
     if (!confirm('Delete this testimonial permanently?')) return;
-    await client.from('Testimonials').delete().eq('id', id);
+    await client.from('Testimonials')
+      .delete()
+      .match({ name: item.name, role: item.role, quote: item.quote, rating: item.rating });
     loadItems();
   }
 
