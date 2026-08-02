@@ -160,7 +160,7 @@
       .from('Testimonials')
       .select('*')
       .eq('Approved', wantApproved)
-      .order('created_at', { ascending: false });
+      .order('id', { ascending: false });
 
     if (error) {
       list.innerHTML = '<div class="empty">Error loading: ' + error.message + '</div>';
