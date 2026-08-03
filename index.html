@@ -221,7 +221,7 @@
 <section class="section" id="pricing">
   <span class="section-label">Pricing</span>
   <h2>Priced like a tool, not a platform.</h2>
-  <div class="pricing-grid">
+  <div class="pricing-grid" style="grid-template-columns:repeat(2,1fr);">
     <div class="price-card">
       <div class="price-tier">Starter</div>
       <div class="price-amount">$0<span>/mo</span></div>
@@ -242,16 +242,7 @@
         <li>Video testimonials</li>
         <li>Custom colors</li>
       </ul>
-    </div>
-    <div class="price-card">
-      <div class="price-tier">Agency</div>
-      <div class="price-amount">$49<span>/mo</span></div>
-      <p style="color:#6b7280; font-size:0.9rem;">Managing walls for clients</p>
-      <ul>
-        <li>Up to 10 walls</li>
-        <li>Client-facing dashboards</li>
-        <li>Priority support</li>
-      </ul>
+      <div id="paypal-button-container-P-4R708465XR556952FNJYHDPA" style="margin-top:18px;"></div>
     </div>
   </div>
 </section>
@@ -259,6 +250,25 @@
 <footer>
   EchoWall — built for the businesses that earned the praise, not the ones with a marketing team to chase it.
 </footer>
+<script src="https://www.paypal.com/sdk/js?client-id=BAAF4KMun5fmixoQDQckbVIZ5Aud7SIlq_mFr9AYCEiElOT3m-tIMcfYkHxthch0mcrRpPrfMGMY-BG1p8&vault=true&intent=subscription" data-sdk-integration-source="button-factory"></script>
+<script>
+  paypal.Buttons({
+      style: {
+          shape: 'rect',
+          color: 'gold',
+          layout: 'vertical',
+          label: 'subscribe'
+      },
+      createSubscription: function(data, actions) {
+        return actions.subscription.create({
+          plan_id: 'P-4R708465XR556952FNJYHDPA'
+        });
+      },
+      onApprove: function(data, actions) {
+        alert('Subscribed! ID: ' + data.subscriptionID);
+      }
+  }).render('#paypal-button-container-P-4R708465XR556952FNJYHDPA');
+</script>
 
 </body>
 </html>
