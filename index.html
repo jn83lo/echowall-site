@@ -74,7 +74,7 @@
   .card:nth-child(2){animation-delay:0.15s; --r:0.8deg; margin-top:22px;}
   .card:nth-child(3){animation-delay:0.25s; --r:-0.6deg;}
   .card:nth-child(4){animation-delay:0.35s; --r:1.1deg; margin-top:10px;}
-  .card:nth-child(5){animation-delay:0.45s; --r:0.4deg; margin-top:34px;}
+  .card:nth-child(5){Znimation-delay:0.45s; --r:0.4deg; margin-top:34px;}
   .card:nth-child(6){animation-delay:0.55s; --r:-1deg;}
   .card:nth-child(7){animation-delay:0.65s; --r:0.9deg; margin-top:16px;}
   .card:nth-child(8){animation-delay:0.75s; --r:-0.4deg;}
@@ -145,7 +145,7 @@
 
 <nav>
   <div class="logo">Echo<span>Wall</span></div>
-  <a href="#pricing" class="nav-cta">Start free</a>
+  <a href="signup.html" class="nav-cta">Start free</a>
 </nav>
 
 <header class="hero">
@@ -153,7 +153,7 @@
   <h1>Every happy customer already wrote your best sales copy.</h1>
   <p class="sub">EchoWall collects testimonials with one link, then displays them as a live wall on your site — no design work, no spreadsheet of screenshots.</p>
   <div class="hero-ctas">
-    <a href="#pricing" class="btn-primary">Start free — 14 days</a>
+    <a href="signup.html" class="btn-primary">Start free — 14 days</a>
     <a href="#how" class="btn-secondary">See how it works</a>
   </div>
 
@@ -231,7 +231,7 @@
         <li>Up to 15 testimonials</li>
         <li>EchoWall badge included</li>
       </ul>
-      <a href="submit.html" class="btn-secondary" style="display:block; text-align:center; margin-top:18px;">Try it free</a>
+      <a href="signup.html" class="btn-secondary" style="display:block; text-align:center; margin-top:18px;">Try it free</a>
     </div>
     <div class="price-card highlight">
       <div class="price-tier">Growing</div>
@@ -266,7 +266,7 @@
         });
       },
       onApprove: function(data, actions) {
-        alert('Subscribed! ID: ' + data.subscriptionID);
+        window.location.href = 'signup.html?subscription=' + data.subscriptionID;
       }
   }).render('#paypal-button-container-P-4R708465XR556952FNJYHDPA');
 </script>
