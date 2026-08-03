@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign up — EchoWall</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2430; --paper:#FAF7F2; --paper-dim:#F1ECE2;
+    --gold:#E8A33D; --sage:#7C9885; --rose:#D88C9A; --line:rgba(27,36,48,0.14);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--paper); color:var(--ink); font-family:'Inter',sans-serif;
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  h1{font-family:'Fraunces',serif; font-weight:700; font-size:1.5rem; margin-bottom:8px;}
+  p.sub{color:#6b7280; font-size:0.92rem; margin-bottom:24px;}
+  .card{max-width:420px; width:100%; background:white; border:1px solid var(--line); border-radius:20px; padding:36px 28px;}
+  label{display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px; margin-top:16px;}
+  input{
+    width:100%; border:1.5px solid var(--line); border-radius:10px; padding:12px 14px;
+    font-size:0.95rem; background:var(--paper-dim); font-family:'Inter',sans-serif;
+  }
+  input:focus{outline:2px solid var(--sage); outline-offset:1px;}
+  .hint{font-size:0.78rem; color:#8a91a0; margin-top:4px;}
+  button{cursor:pointer; font-family:'Inter',sans-serif;}
+  .btn-primary{
+    width:100%; margin-top:22px; background:var(--ink); color:var(--paper);
+    border:none; border-radius:100px; padding:13px; font-weight:600; font-size:0.95rem;
+  }
+  .btn-primary:disabled{opacity:0.6;}
+  .msg{margin-top:14px; font-size:0.85rem; padding:10px 14px; border-radius:10px; display:none;}
+  .msg.error{background:#fbeaea; color:#a13b3b; display:block;}
+  .msg.success{background:#eaf3ec; color:#3d6b4a; display:block;}
+  .switch{text-align:center; margin-top:18px; font-size:0.85rem; color:#6b7280;}
+  .switch a{color:var(--sage); font-weight:600; text-decoration:none;}
+  .done{display:none; text-align:center;}
+  .done .wall-link{
+    background:var(--paper-dim); border-radius:10px; padding:12px 14px; font-family:monospace;
+    font-size:0.82rem; word-break:break-all; margin:16px 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="card" id="signupCard">
+  <h1>Create your EchoWall</h1>
+  <p class="sub">Get your own testimonial wall in under a minute.</p>
+
+  <label for="bizname">Business name</label>
+  <input type="text" id="bizname" placeholder="e.g. Maren's Studio">
+
+  <label for="slug">Your wall URL</label>
+  <input type="text" id="slug" placeholder="e.g. marens-studio">
+  <div class="hint" id="slugPreview">jn83lo.github.io/echowall-site/submit.html?biz=...</div>
+
+  <label for="email">Email</label>
+  <input type="email" id="email" autocomplete="username">
+
+  <label for="password">Password</label>
+  <input type="password" id="password" autocomplete="new-password">
+
+  <button class="btn-primary" id="signupBtn">Create my wall</button>
+  <div class="msg" id="msg"></div>
+  <div class="switch">Already have an account? <a href="dashboard.html">Log in</a></div>
+</div>
+
+<div class="card done" id="doneCard">
+  <h1>You're set up</h1>
+  <p class="sub">Share this link with customers to collect testimonials:</p>
+  <div class="wall-link" id="submitLink"></div>
+  <p class="sub">Embed your wall anywhere with:</p>
+  <div class="wall-link" id="embedLink"></div>
+  <a href="dashboard.html" class="btn-primary" style="display:block; text-decoration:none; text-align:center;">Go to dashboard</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://lcutykiqvezdpdbsdjon.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxjdXR5a2lxdmV6ZHBkYnNkam9uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MjA0NzgsImV4cCI6MjEwMTE5NjQ3OH0.mHTiaQwZhjLvxvIFfb1pgZ9CDdYK-60LdIrzAoeVgQc";
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const slugInput = document.getElementById('slug');
+  const slugPreview = document.getElementById('slugPreview');
+  function slugify(str){
+    return str.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  }
+  document.getElementById('bizname').addEventListener('input', (e) => {
+    if (!slugInput.dataset.touched) {
+      slugInput.value = slugify(e.target.value);
+      updatePreview();
+    }
+  });
+  slugInput.addEventListener('input', () => {
+    slugInput.dataset.touched = "true";
+    slugInput.value = slugify(slugInput.value);
+    updatePreview();
+  });
+  function updatePreview(){
+    slugPreview.textContent = `.../submit.html?biz=${slugInput.value || '...'}`;
+  }
+
+  document.getElementById('signupBtn').addEventListener('click', async () => {
+    const bizname = document.getElementById('bizname').value.trim();
+    const slug = slugInput.value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const msg = document.getElementById('msg');
+    const btn = document.getElementById('signupBtn');
+    msg.style.display = 'none';
+
+    if (!bizname || !slug || !email || !password) {
+      msg.className = 'msg error';
+      msg.textContent = 'Please fill in all fields.';
+      msg.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Creating...';
+
+    const { data: signupData, error: signupError } = await client.auth.signUp({ email, password });
+    if (signupError) {
+      msg.className = 'msg error';
+      msg.textContent = signupError.message;
+      msg.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Create my wall';
+      return;
+    }
+
+    let userId = signupData.user ? signupData.user.id : null;
+    if (!userId) {
+      msg.className = 'msg error';
+      msg.textContent = 'Check your email to confirm your account, then log in to finish setup.';
+      msg.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Create my wall';
+      return;
+    }
+
+    const { error: bizError } = await client.from('businesses').insert([{
+      owner_id: userId,
+      slug: slug,
+      name: bizname
+    }]);
+
+    if (bizError) {
+      msg.className = 'msg error';
+      msg.textContent = bizError.message.includes('duplicate') ? 'That wall URL is taken, try another.' : bizError.message;
+      msg.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Create my wall';
+      return;
+    }
+
+    document.getElementById('signupCard').style.display = 'none';
+    document.getElementById('doneCard').style.display = 'block';
+    document.getElementById('submitLink').textContent =
+      `https://jn83lo.github.io/echowall-site/submit.html?biz=${slug}`;
+    document.getElementById('embedLink').textContent =
+      `<script src="https://jn83lo.github.io/echowall-site/widget.js" data-biz="${slug}">${'<'}/script>`;
+  });
+</script>
+
+</body>
+</html>
