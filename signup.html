@@ -148,8 +148,27 @@
 
     const userId = signupData.user.id;
     const urlParams = new URLSearchParams(window.location.search);
-    const subscriptionId = urlParams.get('subscription');
-    const plan = subscriptionId ? 'growing' : 'free';
+    const urlSubscriptionId = urlParams.get('subscription');
+
+    // Ask the server whether this email (or this exact subscription id) has a
+    // real, unclaimed PayPal payment on file -- works even if payment happened
+    // earlier or on a different device, not just the same browser session.
+    let plan = 'free';
+    let subscriptionId = urlSubscriptionId;
+    try {
+      const claimRes = await fetch('https://lcutykiqvezdpdbsdjon.supabase.co/functions/v1/claim-pending-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, subscription_id: urlSubscriptionId })
+      });
+      const claimData = await claimRes.json();
+      if (claimData.plan === 'growing') {
+        plan = 'growing';
+        subscriptionId = claimData.subscription_id;
+      }
+    } catch (e) {
+      // If the check fails, fall back to free -- never block signup over this.
+    }
 
     const { error: bizError } = await client.from('businesses').insert([{
       owner_id: userId,
