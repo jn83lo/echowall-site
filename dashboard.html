@@ -15,56 +15,38 @@
   body{background:var(--paper); color:var(--ink); font-family:'Inter',sans-serif; min-height:100vh;}
   h1,h2{font-family:'Fraunces',serif; font-weight:700;}
 
-  /* LOGIN */
-  #loginScreen{
-    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
-  }
-  .login-card{
-    max-width:380px; width:100%; background:white; border:1px solid var(--line);
-    border-radius:20px; padding:36px 28px;
-  }
+  #loginScreen{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;}
+  .login-card{max-width:380px; width:100%; background:white; border:1px solid var(--line); border-radius:20px; padding:36px 28px;}
   .login-card h1{font-size:1.5rem; margin-bottom:24px;}
   label{display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px; margin-top:16px;}
-  input{
-    width:100%; border:1.5px solid var(--line); border-radius:10px; padding:12px 14px;
-    font-size:0.95rem; background:var(--paper-dim); font-family:'Inter',sans-serif;
-  }
+  input{width:100%; border:1.5px solid var(--line); border-radius:10px; padding:12px 14px; font-size:0.95rem; background:var(--paper-dim); font-family:'Inter',sans-serif;}
   input:focus{outline:2px solid var(--sage); outline-offset:1px;}
-  button{
-    cursor:pointer; font-family:'Inter',sans-serif;
-  }
-  .btn-primary{
-    width:100%; margin-top:22px; background:var(--ink); color:var(--paper);
-    border:none; border-radius:100px; padding:13px; font-weight:600; font-size:0.95rem;
-  }
-  .btn-primary:disabled{opacity:0.6;}
+  button{cursor:pointer; font-family:'Inter',sans-serif;}
+  .btn-primary{width:100%; margin-top:22px; background:var(--ink); color:var(--paper); border:none; border-radius:100px; padding:13px; font-weight:600; font-size:0.95rem;}
   .login-error{color:#a13b3b; font-size:0.85rem; margin-top:12px; display:none;}
+  .switch{text-align:center; margin-top:18px; font-size:0.85rem; color:#6b7280;}
+  .switch a{color:var(--sage); font-weight:600; text-decoration:none;}
 
-  /* DASHBOARD */
   #dashboard{display:none; max-width:760px; margin:0 auto; padding:32px 20px;}
-  .dash-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;}
+  .dash-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;}
   .dash-header h1{font-size:1.5rem;}
+  .biz-name{color:#6b7280; font-size:0.9rem; margin-bottom:20px;}
   .signout{background:none; border:1.5px solid var(--line); border-radius:100px; padding:8px 16px; font-size:0.85rem; font-weight:600;}
+  .links-box{background:white; border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:20px; font-size:0.82rem;}
+  .links-box .label{font-weight:700; margin-bottom:4px;}
+  .links-box .val{font-family:monospace; word-break:break-all; color:#4a5566; margin-bottom:12px;}
   .tabs{display:flex; gap:8px; margin-bottom:20px;}
-  .tab{
-    background:none; border:1.5px solid var(--line); border-radius:100px; padding:8px 18px;
-    font-size:0.88rem; font-weight:600; color:#6b7280;
-  }
+  .tab{background:none; border:1.5px solid var(--line); border-radius:100px; padding:8px 18px; font-size:0.88rem; font-weight:600; color:#6b7280;}
   .tab.active{background:var(--ink); color:var(--paper); border-color:var(--ink);}
   .empty{color:#8a91a0; font-size:0.92rem; padding:40px 0; text-align:center;}
-  .item{
-    background:white; border:1px solid var(--line); border-radius:14px; padding:20px;
-    margin-bottom:14px;
-  }
+  .item{background:white; border:1px solid var(--line); border-radius:14px; padding:20px; margin-bottom:14px;}
   .item-top{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;}
   .item-name{font-weight:700; font-size:0.98rem;}
   .item-role{font-size:0.82rem; color:#8a91a0;}
   .item-stars{color:var(--gold); font-size:0.85rem; white-space:nowrap;}
   .item-quote{font-size:0.92rem; color:#3a4250; margin:10px 0; line-height:1.5;}
   .item-actions{display:flex; gap:8px; margin-top:12px;}
-  .item-actions button{
-    border:none; border-radius:100px; padding:8px 16px; font-size:0.85rem; font-weight:600;
-  }
+  .item-actions button{border:none; border-radius:100px; padding:8px 16px; font-size:0.85rem; font-weight:600;}
   .btn-approve{background:var(--sage); color:white;}
   .btn-reject{background:var(--rose); color:white;}
   .btn-unapprove{background:var(--paper-dim); color:var(--ink); border:1px solid var(--line) !important;}
@@ -81,14 +63,24 @@
     <input type="password" id="password" autocomplete="current-password">
     <button class="btn-primary" id="loginBtn">Log in</button>
     <div class="login-error" id="loginError"></div>
+    <div class="switch">New here? <a href="signup.html">Create your EchoWall</a></div>
   </div>
 </div>
 
 <div id="dashboard">
   <div class="dash-header">
-    <h1>Testimonials</h1>
+    <h1 id="bizNameHeader">Testimonials</h1>
     <button class="signout" id="signOutBtn">Sign out</button>
   </div>
+  <div class="biz-name" id="bizSlugLine"></div>
+
+  <div class="links-box">
+    <div class="label">Collect testimonials with:</div>
+    <div class="val" id="submitLinkVal">-</div>
+    <div class="label">Embed your wall with:</div>
+    <div class="val" id="embedLinkVal">-</div>
+  </div>
+
   <div class="tabs">
     <button class="tab active" data-filter="pending">Pending</button>
     <button class="tab" data-filter="approved">Approved</button>
@@ -106,11 +98,12 @@
   const dashboard = document.getElementById('dashboard');
   const loginError = document.getElementById('loginError');
   let currentFilter = 'pending';
+  let currentBusiness = null;
 
   async function checkSession(){
     const { data: { session } } = await client.auth.getSession();
     if (session) {
-      showDashboard();
+      await loadBusinessAndShow();
     } else {
       loginScreen.style.display = 'flex';
       dashboard.style.display = 'none';
@@ -126,7 +119,7 @@
       loginError.textContent = error.message;
       loginError.style.display = 'block';
     } else {
-      showDashboard();
+      await loadBusinessAndShow();
     }
   });
 
@@ -145,27 +138,50 @@
     });
   });
 
-  function showDashboard(){
+  async function loadBusinessAndShow(){
+    const { data: { user } } = await client.auth.getUser();
+    const { data: biz, error } = await client
+      .from('businesses')
+      .select('*')
+      .eq('owner_id', user.id)
+      .maybeSingle();
+
+    if (error || !biz) {
+      loginScreen.style.display = 'flex';
+      dashboard.style.display = 'none';
+      loginError.textContent = 'No business found for this account. Please sign up first.';
+      loginError.style.display = 'block';
+      return;
+    }
+
+    currentBusiness = biz;
     loginScreen.style.display = 'none';
     dashboard.style.display = 'block';
+    document.getElementById('bizNameHeader').textContent = biz.name;
+    document.getElementById('bizSlugLine').textContent = 'Wall: ' + biz.slug;
+    document.getElementById('submitLinkVal').textContent =
+      `https://jn83lo.github.io/echowall-site/submit.html?biz=${biz.slug}`;
+    document.getElementById('embedLinkVal').textContent =
+      `<script src="https://jn83lo.github.io/echowall-site/widget.js" data-biz="${biz.slug}"><` + `/script>`;
     loadItems();
   }
 
   async function loadItems(){
     const list = document.getElementById('list');
     list.innerHTML = '<div class="empty">Loading...</div>';
+    if (!currentBusiness) return;
 
     const wantApproved = currentFilter === 'approved';
     const { data, error } = await client
       .from('Testimonials')
       .select('*')
+      .eq('business_id', currentBusiness.id)
       .eq('Approved', wantApproved);
 
     if (error) {
       list.innerHTML = '<div class="empty">Error loading: ' + error.message + '</div>';
       return;
     }
-
     if (!data || data.length === 0) {
       list.innerHTML = '<div class="empty">Nothing here yet.</div>';
       return;
@@ -213,7 +229,7 @@
   async function updateStatus(item, approved){
     await client.from('Testimonials')
       .update({ Approved: approved })
-      .match({ name: item.name, role: item.role, quote: item.quote, rating: item.rating });
+      .match({ name: item.name, role: item.role, quote: item.quote, rating: item.rating, business_id: item.business_id });
     loadItems();
   }
 
@@ -221,7 +237,7 @@
     if (!confirm('Delete this testimonial permanently?')) return;
     await client.from('Testimonials')
       .delete()
-      .match({ name: item.name, role: item.role, quote: item.quote, rating: item.rating });
+      .match({ name: item.name, role: item.role, quote: item.quote, rating: item.rating, business_id: item.business_id });
     loadItems();
   }
 
