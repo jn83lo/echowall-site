@@ -172,7 +172,8 @@
     loginScreen.style.display = 'none';
     dashboard.style.display = 'block';
     document.getElementById('bizNameHeader').textContent = biz.name;
-    document.getElementById('bizSlugLine').textContent = 'Wall: ' + biz.slug;
+    const planLabel = (biz.plan === 'growing') ? 'Growing plan' : 'Free plan (up to 15 testimonials)';
+    document.getElementById('bizSlugLine').textContent = 'Wall: ' + biz.slug + '  \u00b7  ' + planLabel;
     document.getElementById('submitLinkVal').textContent =
       `https://jn83lo.github.io/echowall-site/submit.html?biz=${biz.slug}`;
     document.getElementById('embedLinkVal').textContent =
