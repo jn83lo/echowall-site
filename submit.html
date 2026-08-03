@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Share your experience — EchoWall</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --ink:#1B2430; --paper:#FAF7F2; --paper-dim:#F1ECE2;
@@ -16,10 +16,7 @@
     background:var(--paper); color:var(--ink); font-family:'Inter',sans-serif;
     min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
   }
-  .card{
-    max-width:480px; width:100%; background:white; border:1px solid var(--line);
-    border-radius:20px; padding:36px 28px;
-  }
+  .card{max-width:480px; width:100%; background:white; border:1px solid var(--line); border-radius:20px; padding:36px 28px;}
   h1{font-family:'Fraunces',serif; font-weight:700; font-size:1.6rem; margin-bottom:8px;}
   p.sub{color:#6b7280; font-size:0.95rem; margin-bottom:28px;}
   label{display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px; margin-top:18px;}
@@ -30,22 +27,14 @@
   textarea{resize:vertical; min-height:90px;}
   input:focus, textarea:focus{outline:2px solid var(--sage); outline-offset:1px;}
   .stars{display:flex; gap:6px; margin-top:4px;}
-  .star{
-    font-size:1.8rem; cursor:pointer; color:var(--line); background:none; border:none; padding:0;
-    transition:color 0.15s;
-  }
-  .star.active, .star:hover, .star:hover ~ .star{color:var(--gold);}
-  .stars:hover .star{color:var(--line);}
-  .stars .star:hover, .stars .star:hover ~ .star{color:var(--gold);}
+  .star{font-size:1.8rem; cursor:pointer; color:var(--line); background:none; border:none; padding:0;}
+  button{cursor:pointer; font-family:'Inter',sans-serif;}
   button.submit{
     width:100%; margin-top:26px; background:var(--ink); color:var(--paper);
     border:none; border-radius:100px; padding:14px; font-weight:600; font-size:0.95rem;
-    cursor:pointer;
   }
   button.submit:disabled{opacity:0.6; cursor:not-allowed;}
-  .msg{
-    margin-top:16px; font-size:0.88rem; padding:12px 14px; border-radius:10px; display:none;
-  }
+  .msg{margin-top:16px; font-size:0.88rem; padding:12px 14px; border-radius:10px; display:none;}
   .msg.success{background:#eaf3ec; color:#3d6b4a; display:block;}
   .msg.error{background:#fbeaea; color:#a13b3b; display:block;}
   .done{display:none; text-align:center;}
@@ -56,16 +45,14 @@
 <body>
 
 <div class="card" id="formCard">
-  <h1>Share your experience</h1>
-  <p class="sub">Two questions, takes under a minute. Thank you.</p>
+  <h1 id="formTitle">Share your experience</h1>
+  <p class="sub" id="formSub">Two questions, takes under a minute. Thank you.</p>
 
   <form id="testimonialForm">
     <label for="name">Your name</label>
     <input type="text" id="name" required>
-
     <label for="role">Your role or business (optional)</label>
     <input type="text" id="role" placeholder="e.g. Studio owner">
-
     <label>Rating</label>
     <div class="stars" id="stars">
       <button type="button" class="star" data-value="1">★</button>
@@ -74,10 +61,8 @@
       <button type="button" class="star" data-value="4">★</button>
       <button type="button" class="star" data-value="5">★</button>
     </div>
-
     <label for="quote">What was your experience like?</label>
     <textarea id="quote" required placeholder="Tell us what stood out..."></textarea>
-
     <button type="submit" class="submit" id="submitBtn">Submit</button>
     <div class="msg" id="msg"></div>
   </form>
@@ -88,17 +73,44 @@
   <p>Your testimonial has been submitted and will appear once reviewed.</p>
 </div>
 
+<div class="card" id="errorCard" style="display:none;">
+  <h1>Link not found</h1>
+  <p class="sub">This submission link isn't linked to a business. Double check the link you were given.</p>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   const SUPABASE_URL = "https://lcutykiqvezdpdbsdjon.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxjdXR5a2lxdmV6ZHBkYnNkam9uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MjA0NzgsImV4cCI6MjEwMTE5NjQ3OH0.mHTiaQwZhjLvxvIFfb1pgZ9CDdYK-60LdIrzAoeVgQc";
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  const params = new URLSearchParams(window.location.search);
+  const bizSlug = params.get('biz');
+  let currentBusiness = null;
+
+  async function init(){
+    if (!bizSlug) {
+      showError();
+      return;
+    }
+    const { data, error } = await client.from('businesses').select('*').eq('slug', bizSlug).maybeSingle();
+    if (error || !data) {
+      showError();
+      return;
+    }
+    currentBusiness = data;
+    document.getElementById('formTitle').textContent = `Share your experience with ${data.name}`;
+  }
+
+  function showError(){
+    document.getElementById('formCard').style.display = 'none';
+    document.getElementById('errorCard').style.display = 'block';
+  }
+
   let rating = 5;
   const starButtons = document.querySelectorAll('.star');
   function paintStars(val){
     starButtons.forEach(b => {
-      b.classList.toggle('active', Number(b.dataset.value) <= val);
       b.style.color = Number(b.dataset.value) <= val ? 'var(--gold)' : 'var(--line)';
     });
   }
@@ -116,6 +128,7 @@
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (!currentBusiness) { showError(); return; }
     submitBtn.disabled = true;
     submitBtn.textContent = "Submitting...";
     msg.style.display = "none";
@@ -125,11 +138,8 @@
     const quote = document.getElementById('quote').value.trim();
 
     const { error } = await client.from('Testimonials').insert([{
-      name: name,
-      role: role,
-      quote: quote,
-      rating: rating,
-      Approved: false
+      name: name, role: role, quote: quote, rating: rating,
+      Approved: false, business_id: currentBusiness.id
     }]);
 
     if (error) {
@@ -143,6 +153,8 @@
       document.getElementById('doneCard').style.display = "block";
     }
   });
+
+  init();
 </script>
 
 </body>
