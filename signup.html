@@ -147,10 +147,16 @@
     }
 
     const userId = signupData.user.id;
+    const urlParams = new URLSearchParams(window.location.search);
+    const subscriptionId = urlParams.get('subscription');
+    const plan = subscriptionId ? 'growing' : 'free';
+
     const { error: bizError } = await client.from('businesses').insert([{
       owner_id: userId,
       slug: slug,
-      name: bizname
+      name: bizname,
+      plan: plan,
+      paypal_subscription_id: subscriptionId
     }]);
 
     if (bizError) {
