@@ -9,18 +9,12 @@
       display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
       gap:14px; max-width:1080px; margin:0 auto;
     }
-    .echowall-card{
-      background:white; border:1px solid rgba(27,36,48,0.12); border-radius:14px;
-      padding:18px; font-size:0.9rem; color:#1B2430;
-    }
+    .echowall-card{background:white; border:1px solid rgba(27,36,48,0.12); border-radius:14px; padding:18px; font-size:0.9rem; color:#1B2430;}
     .echowall-stars{color:#E8A33D; font-size:0.85rem; margin-bottom:8px; letter-spacing:2px;}
     .echowall-quote{color:#3a4250; margin-bottom:12px; line-height:1.5;}
     .echowall-who-name{font-weight:700; font-size:0.85rem;}
     .echowall-who-role{font-size:0.78rem; color:#8a91a0;}
-    .echowall-badge{
-      text-align:center; margin-top:14px; font-size:0.72rem; color:#b0b6c0;
-    }
-    .echowall-badge a{color:#8a91a0; text-decoration:none;}
+    .echowall-badge{text-align:center; margin-top:14px; font-size:0.72rem; color:#b0b6c0;}
     .echowall-empty{color:#8a91a0; font-size:0.9rem; text-align:center; padding:20px;}
   `;
   document.head.appendChild(style);
@@ -63,19 +57,35 @@
       return scripts[scripts.length - 1];
     })();
 
+    var bizSlug = scriptTag.getAttribute('data-biz');
+
     var container = document.createElement('div');
     container.innerHTML = '<div class="echowall-empty">Loading testimonials...</div>';
     scriptTag.parentNode.insertBefore(container, scriptTag.nextSibling);
 
-    var url = SUPABASE_URL + '/rest/v1/Testimonials?select=*&Approved=eq.true';
-    fetch(url, {
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
-      }
+    if (!bizSlug) {
+      container.innerHTML = '<div class="echowall-empty">Missing data-biz attribute on embed script.</div>';
+      return;
+    }
+
+    var bizUrl = SUPABASE_URL + '/rest/v1/businesses?select=id&slug=eq.' + encodeURIComponent(bizSlug);
+    fetch(bizUrl, {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
     })
     .then(function(res){ return res.json(); })
-    .then(function(data){ render(container, data); })
+    .then(function(bizData){
+      if (!bizData || bizData.length === 0) {
+        container.innerHTML = '<div class="echowall-empty">Business not found.</div>';
+        return;
+      }
+      var businessId = bizData[0].id;
+      var url = SUPABASE_URL + '/rest/v1/Testimonials?select=*&Approved=eq.true&business_id=eq.' + businessId;
+      return fetch(url, {
+        headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
+      })
+      .then(function(res){ return res.json(); })
+      .then(function(data){ render(container, data); });
+    })
     .catch(function(){
       container.innerHTML = '<div class="echowall-empty">Could not load testimonials.</div>';
     });
