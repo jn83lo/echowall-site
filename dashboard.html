@@ -140,6 +140,20 @@
 
   async function loadBusinessAndShow(){
     const { data: { user } } = await client.auth.getUser();
+
+    // If signup couldn't create the business earlier (email confirmation was pending), finish it now.
+    const pendingRaw = localStorage.getItem('echowall_pending_business');
+    if (pendingRaw) {
+      try {
+        const pending = JSON.parse(pendingRaw);
+        const { data: existing } = await client.from('businesses').select('id').eq('owner_id', user.id).maybeSingle();
+        if (!existing) {
+          await client.from('businesses').insert([{ owner_id: user.id, slug: pending.slug, name: pending.name }]);
+        }
+      } catch(e) {}
+      localStorage.removeItem('echowall_pending_business');
+    }
+
     const { data: biz, error } = await client
       .from('businesses')
       .select('*')
