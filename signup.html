@@ -132,16 +132,21 @@
       return;
     }
 
-    let userId = signupData.user ? signupData.user.id : null;
-    if (!userId) {
+    // Check for an ACTIVE SESSION, not just a user object.
+    // If email confirmation is required, signUp returns a user but no session,
+    // and the client is not authenticated yet -- inserting would fail RLS.
+    if (!signupData.session) {
       msg.className = 'msg error';
-      msg.textContent = 'Check your email to confirm your account, then log in to finish setup.';
+      msg.textContent = 'Check your email to confirm your account. After confirming, log in and we will finish setting up your wall automatically.';
       msg.style.display = 'block';
+      // Stash pending business details so dashboard.html can finish setup after email confirmation + login.
+      localStorage.setItem('echowall_pending_business', JSON.stringify({ slug, name: bizname }));
       btn.disabled = false;
       btn.textContent = 'Create my wall';
       return;
     }
 
+    const userId = signupData.user.id;
     const { error: bizError } = await client.from('businesses').insert([{
       owner_id: userId,
       slug: slug,
